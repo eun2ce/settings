@@ -59,17 +59,19 @@ jobs:
           asset_content_type: application/zip
 
       - name: Update Homebrew formula
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           sed -i "s/version \".*\"/version \"$VERSION\"/" Formula/eun2ce-settings.rb
           sed -i "s/REPLACE_WITH_ACTUAL_SHA256/${{ steps.create_archives.outputs.sha256 }}/" Formula/eun2ce-settings.rb
 
           # Setup Git for Homebrew tap
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
+          git config --global user.email "joeun2ce@gmail.com"
+          git config --global user.name "eun2ce"
 
           # Create and push to Homebrew tap repository
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/eun2ce/homebrew-tap.git
+          git clone https://$GH_TOKEN@github.com/eun2ce/homebrew-tap.git
           cp Formula/eun2ce-settings.rb homebrew-tap/Formula/
           cd homebrew-tap
           git add Formula/eun2ce-settings.rb
