@@ -1,16 +1,23 @@
 #!/bin/bash
 
-HOMEBREW_PREFIX=$(brew --prefix)
-SETTINGS_PREFIX="$HOMEBREW_PREFIX/opt/eun2ce-settings"
+# Windows의 경우 USERPROFILE 환경변수 사용
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    SETTINGS_PREFIX="/c/Program Files/eun2ce-settings"
+    VSCODE_CONFIG_DIR="$USERPROFILE/AppData/Roaming/Code/User"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    HOMEBREW_PREFIX=$(brew --prefix)
+    SETTINGS_PREFIX="$HOMEBREW_PREFIX/opt/eun2ce-settings"
+    VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+else
+    # Linux
+    SETTINGS_PREFIX="/usr/local/opt/eun2ce-settings"
+    VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
+fi
 
 function setup_vscode() {
     echo "Setting up VSCode configuration..."
     
     # VSCode 설정 디렉토리 생성
-    VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
-    fi
     mkdir -p "$VSCODE_CONFIG_DIR"
 
     # 설정 파일 복사
