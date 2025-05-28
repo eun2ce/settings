@@ -1,0 +1,60 @@
+#!/bin/bash
+
+HOMEBREW_PREFIX=$(brew --prefix)
+SETTINGS_PREFIX="$HOMEBREW_PREFIX/opt/eun2ce-settings"
+
+function setup_vscode() {
+    echo "Setting up VSCode configuration..."
+    
+    # VSCode 설정 디렉토리 생성
+    VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
+    fi
+    mkdir -p "$VSCODE_CONFIG_DIR"
+
+    # 설정 파일 복사
+    cp "$SETTINGS_PREFIX/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
+    cp "$SETTINGS_PREFIX/vscode/keybindings.json" "$VSCODE_CONFIG_DIR/keybindings.json"
+
+    # 확장 프로그램 설치
+    while IFS= read -r extension || [[ -n "$extension" ]]; do
+        if [[ ! "$extension" =~ ^#.*$ && ! -z "$extension" ]]; then
+            code --install-extension "$extension"
+        fi
+    done < "$SETTINGS_PREFIX/vscode/extensions.txt"
+
+    echo "VSCode setup completed!"
+}
+
+function show_help() {
+    echo "Usage: eun2ce-settings <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  vscode setup    Setup VSCode configuration"
+    echo "  help           Show this help message"
+}
+
+# 메인 로직
+case "$1" in
+    "vscode")
+        case "$2" in
+            "setup")
+                setup_vscode
+                ;;
+            *)
+                echo "Error: Unknown vscode subcommand"
+                show_help
+                exit 1
+                ;;
+        esac
+        ;;
+    "help"|"--help"|"-h")
+        show_help
+        ;;
+    *)
+        echo "Error: Unknown command"
+        show_help
+        exit 1
+        ;;
+esac 

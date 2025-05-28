@@ -1,0 +1,77 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create release archives
+        id: create_archives
+        run: |
+          mkdir -p bin
+          cp install.sh bin/eun2ce-settings
+          chmod +x bin/eun2ce-settings
+
+          # Create tar.gz
+          tar -czf eun2ce-settings.tar.gz bin/ vscode/
+          # Create zip
+          zip -r eun2ce-settings.zip bin/ vscode/
+
+          # Calculate and output SHA256
+          SHA256=$(shasum -a 256 eun2ce-settings.tar.gz | cut -d' ' -f1)
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./eun2ce-settings.tar.gz
+          asset_name: eun2ce-settings.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./eun2ce-settings.zip
+          asset_name: eun2ce-settings.zip
+          asset_content_type: application/zip
+
+      - name: Update Homebrew formula
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -i "s/version \".*\"/version \"$VERSION\"/" Formula/eun2ce-settings.rb
+          sed -i "s/REPLACE_WITH_ACTUAL_SHA256/${{ steps.create_archives.outputs.sha256 }}/" Formula/eun2ce-settings.rb
+
+          # Setup Git for Homebrew tap
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # Create and push to Homebrew tap repository
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/eun2ce/homebrew-tap.git
+          cp Formula/eun2ce-settings.rb homebrew-tap/Formula/
+          cd homebrew-tap
+          git add Formula/eun2ce-settings.rb
+          git commit -m "Update eun2ce-settings to $VERSION"
+          git push

@@ -1,0 +1,56 @@
+// .vscode/settings.json
+{
+  "files.autoSave": "onFocusChange",
+  "editor.tabSize": 4,
+  "editor.fontFamily": "D2Coding",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "terminal.integrated.inheritEnv": false,
+  "workbench.iconTheme": "material-icon-theme",
+  "terminal.integrated.fontSize": 14,
+  "editor.fontSize": 13,
+  "workbench.colorTheme": "GitHub Dark",
+  // --- Python 전용 설정
+  "[python]": {
+    // Black을 기본 포맷터로 지정
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.codeActionsOnSave": {
+      // isort → Black 순으로 자동 실행
+      "source.organizeImports": "explicit",
+      // Black 으로 포맷팅
+      "source.fixAll.format": "explicit"
+    }
+  },
+
+  // Black
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "black",
+  "python.formatting.blackArgs": ["--line-length=88"],
+
+  // isort (Black 프로필)
+  "python.sortImports.args": ["--profile", "black"],
+  "isort.args": ["--profile", "black"],
+  "isort.check": true,
+
+  // Pylint
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintArgs": ["--max-line-length=88"],
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/*.pyc": true,
+    ".coverage": true,
+    "coverage.xml": true,
+    ".DS_Store": true
+  },
+  // JS/React 기본 포맷터
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
